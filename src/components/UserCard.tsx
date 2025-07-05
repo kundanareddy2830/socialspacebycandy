@@ -23,39 +23,45 @@ const UserCard: React.FC<UserCardProps> = ({ user }) => {
 
   return (
     <Card className="p-6 hover:shadow-lg transition-shadow duration-300">
-      <div className="flex items-center space-x-4">
-        <Link to={`/profile/${user.id}`}>
-          <Avatar className="w-16 h-16 avatar-ring">
-            <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback>
-              <UserIcon className="w-8 h-8" />
-            </AvatarFallback>
-          </Avatar>
-        </Link>
-        
-        <div className="flex-1">
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center space-x-4">
           <Link to={`/profile/${user.id}`}>
-            <h3 className="font-bold text-lg text-gray-900 hover:text-blue-600 transition-colors">{user.name}</h3>
-            <p className="text-gray-600">{user.username}</p>
+            <Avatar className="w-16 h-16 avatar-ring">
+              <AvatarImage src={user.avatar} alt={user.name} />
+              <AvatarFallback>
+                <UserIcon className="w-8 h-8" />
+              </AvatarFallback>
+            </Avatar>
           </Link>
-          <p className="text-sm text-gray-500 mt-1 line-clamp-2">{user.bio}</p>
           
-          <div className="flex space-x-4 mt-3 text-sm">
-            <span><strong>{user.posts}</strong> posts</span>
-            <span><strong>{user.followers}</strong> followers</span>
-            <span><strong>{user.following}</strong> following</span>
+          <div className="flex-1 min-w-0">
+            <Link to={`/profile/${user.id}`}>
+              <h3 className="font-bold text-lg text-gray-900 hover:text-blue-600 transition-colors truncate">{user.name}</h3>
+              <p className="text-gray-600 truncate">{user.username}</p>
+            </Link>
           </div>
+          
+          {!isCurrentUser && (
+            <Button
+              onClick={handleFollow}
+              variant={user.isFollowing ? "outline" : "default"}
+              className={`shrink-0 ${user.isFollowing ? "border-blue-500 text-blue-600 hover:bg-blue-50" : "social-gradient"}`}
+              size="sm"
+            >
+              {user.isFollowing ? 'Following' : 'Follow'}
+            </Button>
+          )}
         </div>
         
-        {!isCurrentUser && (
-          <Button
-            onClick={handleFollow}
-            variant={user.isFollowing ? "outline" : "default"}
-            className={user.isFollowing ? "border-blue-500 text-blue-600 hover:bg-blue-50" : "social-gradient"}
-          >
-            {user.isFollowing ? 'Following' : 'Follow'}
-          </Button>
-        )}
+        <div className="space-y-3">
+          <p className="text-sm text-gray-500 line-clamp-2">{user.bio}</p>
+          
+          <div className="flex justify-between text-sm">
+            <span><strong>{user.posts.toLocaleString()}</strong> posts</span>
+            <span><strong>{user.followers.toLocaleString()}</strong> followers</span>
+            <span><strong>{user.following.toLocaleString()}</strong> following</span>
+          </div>
+        </div>
       </div>
     </Card>
   );
