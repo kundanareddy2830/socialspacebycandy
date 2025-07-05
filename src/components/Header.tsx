@@ -12,7 +12,7 @@ const Header = () => {
   const { currentUser } = useSocial();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-700">
+    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-200 dark:bg-slate-800/90 dark:border-slate-700/50">
       <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
@@ -32,16 +32,16 @@ const Header = () => {
             <DarkModeToggle />
             <NotificationCenter />
             
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="dark:hover:bg-slate-700/50">
               <MessageCircle className="w-5 h-5" />
             </Button>
 
             {currentUser && (
               <Link to={`/profile/${currentUser.id}`}>
                 <div className="flex items-center space-x-2">
-                  <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all">
+                  <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-blue-300 dark:hover:ring-blue-500/50 transition-all">
                     <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                    <AvatarFallback>
+                    <AvatarFallback className="dark:bg-slate-700">
                       <User className="w-4 h-4" />
                     </AvatarFallback>
                   </Avatar>
