@@ -1,5 +1,5 @@
 
-import { User, Message, Bell } from 'lucide-react';
+import { User, MessageCircle, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useSocial } from '@/contexts/SocialContext';
@@ -28,7 +28,7 @@ const Header = () => {
             </Button>
             
             <Button variant="ghost" size="sm">
-              <Message className="w-5 h-5" />
+              <MessageCircle className="w-5 h-5" />
             </Button>
 
             {currentUser && (
