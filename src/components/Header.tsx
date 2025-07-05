@@ -1,15 +1,18 @@
 
-import { User, MessageCircle, Bell } from 'lucide-react';
+import { User, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useSocial } from '@/contexts/SocialContext';
 import { Link } from 'react-router-dom';
+import SearchBar from './SearchBar';
+import NotificationCenter from './NotificationCenter';
+import DarkModeToggle from './DarkModeToggle';
 
 const Header = () => {
   const { currentUser } = useSocial();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200 dark:bg-gray-900/80 dark:border-gray-700">
       <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
@@ -21,11 +24,13 @@ const Header = () => {
             </span>
           </Link>
 
+          <div className="flex-1 max-w-md mx-8">
+            <SearchBar />
+          </div>
+
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </Button>
+            <DarkModeToggle />
+            <NotificationCenter />
             
             <Button variant="ghost" size="sm">
               <MessageCircle className="w-5 h-5" />
@@ -33,12 +38,17 @@ const Header = () => {
 
             {currentUser && (
               <Link to={`/profile/${currentUser.id}`}>
-                <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all">
-                  <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                  <AvatarFallback>
-                    <User className="w-4 h-4" />
-                  </AvatarFallback>
-                </Avatar>
+                <div className="flex items-center space-x-2">
+                  <Avatar className="w-8 h-8 cursor-pointer hover:ring-2 hover:ring-blue-300 transition-all">
+                    <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
+                    <AvatarFallback>
+                      <User className="w-4 h-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  {currentUser.isOnline && (
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  )}
+                </div>
               </Link>
             )}
           </div>

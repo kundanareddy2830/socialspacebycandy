@@ -4,10 +4,16 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { Heart, MessageSquare, Share, User } from 'lucide-react';
+import { Heart, MessageSquare, Share, User, Bookmark, MoreHorizontal } from 'lucide-react';
 import { Post } from '@/contexts/SocialContext';
 import { useSocial } from '@/contexts/SocialContext';
 import { Link } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface PostCardProps {
   post: Post;
@@ -16,10 +22,25 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const { likePost, addComment, currentUser } = useSocial();
+  const { likePost, addComment, currentUser, bookmarkPost, sharePost, deletePost } = useSocial();
 
   const handleLike = () => {
     likePost(post.id);
+  };
+
+  const handleBookmark = () => {
+    bookmarkPost(post.id);
+  };
+
+  const handleShare = () => {
+    sharePost(post.id);
+    navigator.clipboard.writeText(`Check out this post: ${post.content}`);
+  };
+
+  const handleDelete = () => {
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      deletePost(post.id);
+    }
   };
 
   const handleComment = (e: React.FormEvent) => {
@@ -40,6 +61,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     return `${Math.floor(hours / 24)}d ago`;
   };
 
+  const isOwnPost = currentUser?.id === post.userId;
+
   return (
     <Card className="post-card">
       <div className="p-6">
@@ -52,14 +75,55 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-gray-900">{post.user.name}</h3>
-              <p className="text-sm text-gray-500">{post.user.username} • {formatTime(post.timestamp)}</p>
+              <div className="flex items-center space-x-1">
+                <h3 className="font-semibold text-gray-900">{post.user.name}</h3>
+                {post.user.isVerified && (
+                  <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs">✓</span>
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-gray-500">
+                {post.user.username} • {formatTime(post.timestamp)}
+                {post.isEdited && <span className="ml-1">(edited)</span>}
+              </p>
             </div>
           </Link>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreHorizontal className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={handleBookmark}>
+                {post.isBookmarked ? 'Remove Bookmark' : 'Bookmark'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleShare}>Share</DropdownMenuItem>
+              {isOwnPost && (
+                <DropdownMenuItem onClick={handleDelete} className="text-red-600">
+                  Delete Post
+                </DropdownMenuItem>
+              )}
+              {!isOwnPost && (
+                <DropdownMenuItem className="text-red-600">Report</DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="mb-4">
           <p className="text-gray-800 leading-relaxed">{post.content}</p>
+          {post.hashtags && post.hashtags.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {post.hashtags.map((tag, index) => (
+                <span key={index} className="text-blue-600 hover:underline cursor-pointer">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
           {post.image && (
             <div className="mt-4 rounded-xl overflow-hidden">
               <img 
@@ -95,10 +159,20 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           <Button
             variant="ghost"
             size="sm"
+            onClick={handleShare}
             className="flex items-center space-x-2 text-gray-600 hover:text-green-500"
           >
             <Share className="w-5 h-5" />
             <span>Share</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBookmark}
+            className={`flex items-center space-x-2 ${post.isBookmarked ? 'text-yellow-500' : 'text-gray-600'} hover:text-yellow-500`}
+          >
+            <Bookmark className={`w-5 h-5 ${post.isBookmarked ? 'fill-current' : ''}`} />
           </Button>
         </div>
 

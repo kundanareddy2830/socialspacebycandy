@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface User {
@@ -11,6 +10,8 @@ export interface User {
   following: number;
   posts: number;
   isFollowing?: boolean;
+  isVerified?: boolean;
+  isOnline?: boolean;
 }
 
 export interface Comment {
@@ -31,17 +32,27 @@ export interface Post {
   timestamp: Date;
   user: User;
   isLiked?: boolean;
+  isBookmarked?: boolean;
+  isEdited?: boolean;
+  hashtags?: string[];
 }
 
 interface SocialContextType {
   currentUser: User | null;
   users: User[];
   posts: Post[];
+  trendingTopics: string[];
   createPost: (content: string, image?: string) => void;
   likePost: (postId: string) => void;
   addComment: (postId: string, content: string) => void;
   followUser: (userId: string) => void;
   setCurrentUser: (user: User) => void;
+  bookmarkPost: (postId: string) => void;
+  editPost: (postId: string, newContent: string) => void;
+  deletePost: (postId: string) => void;
+  sharePost: (postId: string) => void;
+  blockUser: (userId: string) => void;
+  reportUser: (userId: string, reason: string) => void;
 }
 
 const SocialContext = createContext<SocialContextType | undefined>(undefined);
@@ -56,6 +67,8 @@ const initialUsers: User[] = [
     followers: 2840,
     following: 1250,
     posts: 287,
+    isVerified: true,
+    isOnline: true,
   },
   {
     id: '2',
@@ -66,6 +79,8 @@ const initialUsers: User[] = [
     followers: 3100,
     following: 890,
     posts: 156,
+    isVerified: true,
+    isOnline: false,
   },
   {
     id: '3',
@@ -126,6 +141,54 @@ const initialUsers: User[] = [
     followers: 12500,
     following: 890,
     posts: 234,
+  },
+  {
+    id: '9',
+    name: 'Jessica Williams',
+    username: '@jessicaw',
+    avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face',
+    bio: 'Fashion designer & lifestyle blogger 👗 Bringing style and elegance to everyday life',
+    followers: 7200,
+    following: 1800,
+    posts: 445,
+    isVerified: true,
+    isOnline: true,
+  },
+  {
+    id: '10',
+    name: 'Michael Chang',
+    username: '@mikechang',
+    avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face',
+    bio: 'Tech entrepreneur | AI enthusiast 🤖 | Building the next generation of smart applications',
+    followers: 15400,
+    following: 2100,
+    posts: 678,
+    isVerified: true,
+    isOnline: true,
+  },
+  {
+    id: '11',
+    name: 'Aria Patel',
+    username: '@ariapatel',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face',
+    bio: 'Environmental scientist 🌱 | Climate advocate | Making sustainability accessible to everyone',
+    followers: 9800,
+    following: 1650,
+    posts: 523,
+    isVerified: false,
+    isOnline: false,
+  },
+  {
+    id: '12',
+    name: 'Carlos Rodriguez',
+    username: '@carlosr',
+    avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=150&h=150&fit=crop&crop=face',
+    bio: 'Professional chef 👨‍🍳 | Food network star | Sharing recipes that bring families together',
+    followers: 25600,
+    following: 890,
+    posts: 1234,
+    isVerified: true,
+    isOnline: true,
   }
 ];
 
@@ -133,12 +196,13 @@ const initialPosts: Post[] = [
   {
     id: '1',
     userId: '1',
-    content: 'Just launched my new creative project! 🎨 Been working on this for months and I\'m so excited to finally share it with everyone. What do you think about the color palette?',
+    content: 'Just launched my new creative project! 🎨 Been working on this for months and I\'m so excited to finally share it with everyone. What do you think about the color palette? #CreativeLife #DesignInspiration #NewProject',
     image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=500&h=300&fit=crop',
     likes: 127,
     comments: [],
     timestamp: new Date(Date.now() - 30 * 60 * 1000),
     user: initialUsers[0],
+    hashtags: ['#CreativeLife', '#DesignInspiration', '#NewProject'],
   },
   {
     id: '2',
@@ -225,7 +289,56 @@ const initialPosts: Post[] = [
     comments: [],
     timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000),
     user: initialUsers[6],
+  },
+  {
+    id: '11',
+    userId: '9',
+    content: 'Behind the scenes at Paris Fashion Week! ✨ The energy here is absolutely incredible. So many talented designers showcasing their vision. #PFW #Fashion #BehindTheScenes',
+    image: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=500&h=300&fit=crop',
+    likes: 892,
+    comments: [],
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+    user: initialUsers[8],
+    hashtags: ['#PFW', '#Fashion', '#BehindTheScenes'],
+  },
+  {
+    id: '12',
+    userId: '10',
+    content: 'Excited to announce our AI startup just raised Series A! 🚀 We\'re building tools that will revolutionize how we interact with technology. The future is here! #AI #Startup #TechNews',
+    likes: 1456,
+    comments: [],
+    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
+    user: initialUsers[9],
+    hashtags: ['#AI', '#Startup', '#TechNews'],
+  },
+  {
+    id: '13',
+    userId: '11',
+    content: 'Climate data from this week shows we\'re making progress! 🌍 Small actions by individuals are adding up to real change. Every choice matters. #ClimateAction #Sustainability #Environment',
+    image: 'https://images.unsplash.com/photo-1569163139791-de2e4993c4b6?w=500&h=300&fit=crop',
+    likes: 634,
+    comments: [],
+    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000),
+    user: initialUsers[10],
+    hashtags: ['#ClimateAction', '#Sustainability', '#Environment'],
+  },
+  {
+    id: '14',
+    userId: '12',
+    content: 'New recipe alert! 👨‍🍳 My grandmother\'s secret paella recipe that\'s been in our family for generations. Finally ready to share it with the world! #FamilyRecipes #SpanishCuisine #Cooking',
+    image: 'https://images.unsplash.com/photo-1534080564583-6be75777b70a?w=500&h=300&fit=crop',
+    likes: 2134,
+    comments: [],
+    timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000),
+    user: initialUsers[11],
+    hashtags: ['#FamilyRecipes', '#SpanishCuisine', '#Cooking'],
   }
+];
+
+const trendingTopics = [
+  '#TechInnovation', '#CreativeLife', '#Sustainability', '#FoodieLife', 
+  '#TravelDiaries', '#FitnessJourney', '#AIFuture', '#ClimateAction',
+  '#DesignInspiration', '#StartupLife'
 ];
 
 export const SocialProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -236,6 +349,8 @@ export const SocialProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   const createPost = (content: string, image?: string) => {
     if (!currentUser) return;
     
+    const hashtags = content.match(/#\w+/g) || [];
+    
     const newPost: Post = {
       id: Date.now().toString(),
       userId: currentUser.id,
@@ -245,6 +360,7 @@ export const SocialProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       comments: [],
       timestamp: new Date(),
       user: currentUser,
+      hashtags,
     };
     
     setPosts(prev => [newPost, ...prev]);
@@ -265,6 +381,39 @@ export const SocialProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           }
         : post
     ));
+  };
+
+  const bookmarkPost = (postId: string) => {
+    setPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { ...post, isBookmarked: !post.isBookmarked }
+        : post
+    ));
+  };
+
+  const editPost = (postId: string, newContent: string) => {
+    setPosts(prev => prev.map(post => 
+      post.id === postId 
+        ? { ...post, content: newContent, isEdited: true }
+        : post
+    ));
+  };
+
+  const deletePost = (postId: string) => {
+    setPosts(prev => prev.filter(post => post.id !== postId));
+  };
+
+  const sharePost = (postId: string) => {
+    // Simulate sharing functionality
+    console.log(`Post ${postId} shared!`);
+  };
+
+  const blockUser = (userId: string) => {
+    setUsers(prev => prev.filter(user => user.id !== userId));
+  };
+
+  const reportUser = (userId: string, reason: string) => {
+    console.log(`User ${userId} reported for: ${reason}`);
   };
 
   const addComment = (postId: string, content: string) => {
@@ -311,11 +460,18 @@ export const SocialProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       currentUser,
       users,
       posts,
+      trendingTopics,
       createPost,
       likePost,
       addComment,
       followUser,
       setCurrentUser,
+      bookmarkPost,
+      editPost,
+      deletePost,
+      sharePost,
+      blockUser,
+      reportUser,
     }}>
       {children}
     </SocialContext.Provider>
